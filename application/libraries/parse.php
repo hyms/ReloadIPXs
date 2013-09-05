@@ -8,7 +8,6 @@ include 'parsePush.php';
 include 'parseGeoPoint.php';
 include 'parseACL.php';
 include 'parseCloud.php';
-include 'ParseLibraryException.php';
 
 class parseRestClient{
 
@@ -21,28 +20,22 @@ class parseRestClient{
 	public $requestUrl = '';
 	public $returnData = '';
 
-	var $errorParse;
-	
 	public function __construct(){
 		$parseConfig = new parseConfig;
 		$this->_appid = $parseConfig::APPID;
     	$this->_masterkey = $parseConfig::MASTERKEY;
     	$this->_restkey = $parseConfig::RESTKEY;
     	$this->_parseurl = $parseConfig::PARSEURL;
-    	$this->errorParse=& get_instance();
-    	$this->errorParse->load->library('parse/ParseLibraryException');
-    	
+
 		if(empty($this->_appid) || empty($this->_restkey) || empty($this->_masterkey)){
 			$this->throwError('You must set your Application ID, Master Key and REST API Key');
 		}
-		if (function_exists('curl_version'))
-		{
-			$version = curl_version();
-			$ssl_supported = ( $version['features'] & CURL_VERSION_SSL );
-	
-			if(!$ssl_supported){
-				$this->throwError('CURL ssl support not found');	
-			}
+
+		$version = curl_version();
+		$ssl_supported = ( $version['features'] & CURL_VERSION_SSL );
+
+		if(!$ssl_supported){
+			$this->throwError('CURL ssl support not found');	
 		}
 
 	}
@@ -185,17 +178,15 @@ class parseRestClient{
 		}	
 	}
 
-	public function throwError($error){
-		$params = array('message'=>$error['error'],'code'=>$error['code']);
-		throw $this->errorParse->parselibraryexception->message($params);
-		
+	public function throwError($msg,$code=0){
+		throw new ParseLibraryException($msg,$code);
 	}
 
 	private function checkResponse($response,$responseCode,$expectedCode){
 		//TODO: Need to also check for response for a correct result from parse.com
 		if(!in_array($responseCode,$expectedCode)){
 			$error = json_decode($response);
-			$this->throwError($error);
+			$this->throwError($error->error,$error->code);
 		}
 		else{
 			//check for empty return
@@ -210,6 +201,20 @@ class parseRestClient{
 }
 
 
+class ParseLibraryException extends Exception{
+	public function __construct($message, $code = 0, Exception $previous = null) {
+		//codes are only set by a parse.com error
+		if($code != 0){
+			$message = "parse.com error: ".$message;
+		}
 
+		parent::__construct($message, $code, $previous);
+	}
+
+	public function __toString() {
+		return __CLASS__ . ": [{$this->code}]: {$this->message}\n";
+	}
+
+}
 
 ?>
