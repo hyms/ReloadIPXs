@@ -1,0 +1,87 @@
+
+<html>
+	<head>
+		<script  type="text/javascript">
+			function valor()
+			{
+                var n1= document.getElementById("nro_autorizacion").value;
+                var n2= document.getElementById("nro_factura").value;
+                var resultado= (parseInt(n1)+parseInt(n2));
+                alert(resultado)        
+			}
+		</script>
+	</head>
+	
+	<body>
+		<form method="post" action="formulario.html">
+  <table width="285" border="3">
+	<tr colspan="2">
+      <td>
+        CODIGO DE CONTROL JAVASCRIPT
+      </td>
+      <td>
+    <tr>
+      <td>
+        Nro. de Autorizacion
+      </td>
+      <td>
+        <input type="text" name="nro_autorizacion" id="nro_autorizacion"></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Nro. de Factura
+      </td>
+      <td>
+        <input type="text" name="nro_factura" id="nro_factura"></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        NIT/ci
+      </td>
+      <td>
+        <input type="text" name="nit" id="nit"></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Fecha Transaccion
+      </td>
+      <td>
+        <input type="text" name="fecha_transaccion" id="fecha_transaccion"></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Monto Transaccion
+      </td>
+      <td>
+        <input type="text" name="monto_transaccion" id="monto_transaccion"></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Llave dosificacion
+      </td>
+      <td>
+        <input type="text" name="llave_dosificacion" id="llave_dosificacion"></input>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <input type="submit" value="Generar" name="boton" onClick="valor()"/>
+      </td>
+    </tr>
+	<tr>
+      <td>
+        codigo generado
+      </td>
+      <td>
+        <input type="text" name="codigo"></input>
+      </td>
+    </tr>
+  </table>
+</form>
+	</body>
+</html>

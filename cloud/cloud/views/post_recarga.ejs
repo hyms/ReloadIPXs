@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>comprobante</title>
+  </head>
+  <body>
+	      <form method="post" action="/principal">
+		<p>
+		<table width="285" border="3">
+			<tr>
+				<td colspan="3" align="center">POST_COMPROBANTE</td>
+			</tr>
+			<tr>
+				<td colspan="3" bgcolor="#000099">&nbsp;</td>
+			</tr>
+			
+				<input name="usuario" value=<%=usuario%> readonly=”readonly” style="display:none"></input>
+				<input name="password" value=<%=password%> readonly=”readonly” style="display:none"></input>
+				
+			<tr>
+				<td colspan="3" align="center"><input class="button" type="submit" value="CONTINUAR"></input></td>
+			</tr>
+		</table>
+      </p>
+    </form>
+  </body>
+</html>

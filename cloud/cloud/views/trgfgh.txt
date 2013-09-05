@@ -1,0 +1,3 @@
+modelo:bcm943142hm
+ 
+marca:boadcom

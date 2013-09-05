@@ -1,0 +1,68 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Estado</title>
+  </head>
+  <body>
+      <form method="post" action="/recarga">
+		<p>
+		<table width="285" border="3">
+			<tr>
+				<td colspan="3" align="center">RECARGAS</td>
+			</tr>
+			<tr>
+				<td colspan="3" align="center">informacion recibida</td>
+			</tr>
+			<tr>
+				<td width="97">CODE</td>
+				<td width="7">::</td>
+				<td width="95"><%=codigo%></td>
+			</tr>
+			<tr>
+				<td>BALANCE</td>
+				<td>::</td>
+				<td><%=balance%></td>
+			</tr>
+			<tr>
+				<td>TEXTO</td>
+				<td>::</td>
+				<td><%=texto%></td>
+			</tr>
+			<tr>
+				<td>KEY</td>
+				<td>::</td>
+				<td><input name="key" value=<%=key%>></td>
+			</tr>
+			<tr>
+				<td>OPERADOR</td>
+				<td>::</td>
+				<td><input name="operador" value=<%=operador%>></td>
+			</tr>
+			<tr>
+				<td colspan="3" bgcolor="#000099">&nbsp;</td>
+			</tr>
+			<tr>
+				<td colspan="3" align="center">realizar recarga</td>
+				</tr>
+			<tr>
+				<td>NUMERO</td>
+				<td>::</td>
+				<td><input name="numero"></input></td>
+			</tr>
+			<tr>
+				<td>MONTO</td>
+				<td>::</td>
+				<td><input name="carga"></input></td>
+			</tr>
+				<input name="usuario" value=<%=usuario%> readonly=”readonly” style="display:none"></input>
+				<input name="password" value=<%=password%> readonly=”readonly” style="display:none"></input>
+			<tr>
+				<td colspan="3" align="center"><input class="button" type="submit" value="RECARGAR"></input></td>
+			</tr>
+		</table>
+      </p>
+    </form>
+
+  </body>
+</html>

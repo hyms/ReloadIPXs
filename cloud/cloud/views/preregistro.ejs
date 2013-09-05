@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>preRegistro</title>
+  </head>
+  <body>
+      <form method="post" action="/felicitacion">
+		<p>
+		<table width="285" border="3">
+			<tr>
+				<td colspan="3" align="center">estado::<%=salida%></td>
+			</tr>
+			<tr>
+				<td colspan="3" align="center">INFORMACION PERSONAL</td>
+			</tr>
+			<tr>
+				<td width="97">NOMBRE</td>
+				<td width="7">::</td>
+				<td width="95"><input name="nombre"></td>
+			</tr>
+			<tr>
+				<td>APELLIDO</td>
+				<td>::</td>
+				<td><input name="apellido"></td>
+			</tr>
+			<tr>
+				<td>CI</td>
+				<td>::</td>
+				<td><input name="ci"></td>
+			</tr>
+			<tr>
+				<td>CELULAR</td>
+				<td>::</td>
+				<td><input name="celular"></td>
+			</tr>
+			<tr>
+				<td>BALANCE</td>
+				<td>::</td>
+				<td><input name="balance"></td>
+			</tr>
+			<tr>
+				<td>PASSWORD</td>
+				<td>::</td>
+				<td><input name="password"></input></td>
+			</tr>
+			<tr>
+				<td>ESTADO</td>
+				<td>::</td>
+				<td><input name="estado"></input></td>
+			</tr>
+			<tr>
+				<td colspan="3" bgcolor="#000099">&nbsp;</td>
+			</tr>
+			
+				<input name="password_m" value=<%=password_m%> readonly=”readonly” style="display:none"></input>
+				<input name="usuario_m" value=<%=usuario_m%> readonly=”readonly” style="display:none"></input>
+	
+			<tr>
+				<td colspan="3" align="center"><input class="button" type="submit" value="REGISTRAR"></input></td>
+			</tr>
+		</table>
+      </p>
+    </form>
+  </body>
+</html>

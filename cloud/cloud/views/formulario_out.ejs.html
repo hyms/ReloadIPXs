@@ -1,0 +1,76 @@
+<html>
+	<head>
+	</head>
+	<body>
+		<form method="post" action="/formulario_out">
+  <table width="285" border="3">
+      <tr>
+      <td colspan="2" align="center">
+        <%=salida%>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Nro. de Autorizacion
+      </td>
+      <td>
+        <input type="text" name="nro_autorizacion" value =<%=autorizacion%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Nro. de Factur
+      </td>
+      <td>
+        <input type="text" name="nro_factura" value =<%=factura%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        NIT/ci
+      </td>
+      <td>
+        <input type="text" name="nit" value=<%=nit%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Fecha Transaccion
+      </td>
+      <td>
+        <input type="text" name="fecha_transaccion" value=<%=fecha%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Monto Transaccion
+      </td>
+      <td>
+        <input type="text" name="monto_transaccion" value=<%=monto%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Llave dosificacion
+      </td>
+      <td>
+        <input type="text" name="llave_dosificacion" value=<%=llave%>></input>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" align="center">
+        <input type="submit" value="Generar" name="boton"/>
+      </td>
+    </tr>
+	<tr>
+      <td>
+        codigo generado
+      </td>
+      <td>
+        <input type="text" name="codigo"></input>
+      </td>
+    </tr>
+  </table>
+</form>
+	</body>
+</html>
