@@ -22,20 +22,6 @@ app.get('/saludo', function(req, res){
 	res.render('saludo',{salida:"ESTE ES UN SALUDO EN PHP ..."});
 });
 
-// // Example reading from the request query string of an HTTP get request.
-// app.get('/test', function(req, res) {
-//   // GET http://example.parseapp.com/test?message=hello
-//   res.send(req.query.message);
-// });
-
-// // Example reading from the request body of an HTTP post request.
-// app.post('/test', function(req, res) {
-//   // POST http://example.parseapp.com/test (with request body "message=hello")
-//   res.send(req.body.message);
-// });
-
-// Attach the Express app to Cloud Code.
-//funcion para la autenticacion o login del usuario
 
 app.post('/formulario_out', function(req, res) {	
 		var o_autorizacion=req.body.nro_autorizacion;
@@ -624,7 +610,7 @@ app.post('/felicitacion', function(req, res) {
 		
 	});
 });
-	
+//liffestar
 
 app.listen();
 
