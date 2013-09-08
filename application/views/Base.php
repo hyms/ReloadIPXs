@@ -8,11 +8,17 @@
 <body>
 <p>Titulo Base</p>
 <ul>
-<?php foreach ($resul as $item):?>
+<?php if ($resul): ?>
+	<?php foreach ($resul as $item):?>
+	
+		<li><?php print_r($item);?></li>
+	
+	<?php endforeach;?>
+<?php else: ?>
 
-<li><?php echo $item;?></li>
+   <li>No hay datos</li>
 
-<?php endforeach;?>
+<?php endif; ?>
 </ul>
 </body>
 </html>

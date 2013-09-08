@@ -40,7 +40,7 @@ class parseUser extends parseRestClient{
 		    		'username' => $this->data['username']
 		    	)
 			));
-			
+			//print_r($request);
 	    	return $request;			
 	
 		}

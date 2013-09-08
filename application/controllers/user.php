@@ -5,13 +5,14 @@ class user extends CI_Controller {
 	public function index()
 	{
 		$this->load->library('parse/parseRestClient');
-		$this->load->library('parse/parseUser');
+		$parseUser = new parseUser;
 		
-		//$res['resul'] = $this->parseUser->signup();
-		$res['resul'] = $this->parseuser->username ='ipxserver';
-		$res['resul'] = $this->parseuser->password ='4rc4ng3l';
-		$res['resul'] = $this->parseuser->login();
-		$this->load->view('Base');
+		//$res['resul'] = $parseUser->signup('helier','master33');
+		$parseUser->username = 'admin';
+		$parseUser->password = 'master33';
+		$res['resul'] = $parseUser->login();
+		//print_r($res['resul']);
+		$this->load->view('Base',$res);
 	}
 }
 /* End of file users.php */
