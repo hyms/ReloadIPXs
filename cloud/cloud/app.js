@@ -3,26 +3,6 @@
 var express = require('express');
 var app = express();
 
-// Global app configuration section
-app.set('views', 'cloud/views');  // Specify the folder to find templates
-app.set('view engine', 'ejs');    // Set the template engine
-app.use(express.bodyParser());    // Middleware for reading request body
-
-// This is an example of hooking up a request handler with a specific request
-// path and HTTP verb using the Express routing API.
-app.get('/gonzalo', function(req, res) {
-  res.render('gonzalo', { salida: 'felicidades huraa comienzas a diseñar la interfaz web! y a realizar tu primera interfaz' });
-});
-
-app.get('/formulario', function(req, res){
-	res.render('formulario',{salida:"INGRESE LOS DATOS QUE SE LE PIDEN ..."});
-});
-
-app.get('/saludo', function(req, res){
-	res.render('saludo',{salida:"ESTE ES UN SALUDO EN PHP ..."});
-});
-
-
 app.post('/formulario_out', function(req, res) {	
 		var o_autorizacion=req.body.nro_autorizacion;
 		var o_factura=req.body.nro_factura;
@@ -34,50 +14,56 @@ app.post('/formulario_out', function(req, res) {
 });
 
 /*
-*ESTA ES LA FUNCION PRINCIPAL DESPUES DEL LOGEO
+*funcion despues del login
 */
-//añadiendo mi primer metodo post
 app.post('/principal', function(req, res) {
 	Parse.User.logIn(req.body.usuario, req.body.password, {
 		success: function(user) {
-			//res.render('logins', {salida: "hola amigo  "+ user.id});
+			
 			//añadiendo la funcion completa del login
 			var query=new Parse.Query("User");
 			query.equalTo("objectId",user.id);
 			query.find().then(function(results){
-					var name=results[0].get("username");
-					var estado=results[0].get("estado");
-					var activo=results[0].get("activo");
-					var iden=results[0].get("objectId");
-					//var balance=results[0].get("balance");
-					//salida de prueba
+				
+				//variables de la clase
+				var ciNit		= results[0].get("CiNit");
+				var nombre		= results[0].get("nombre");
+				var segNombre	= results[0].get("segNombre");
+				var apPaterno	= results[0].get("apPaterno");
+				var apMaterno	= results[0].get("apMaterno");
+				var ciudad		= results[0].get("ciudad");
+				var direccion	= results[0].get("direccion");
+				var email		= results[0].get("email");
+				var estado		= results[0].get("estado"); 	//estado 0 no activo,1 activo,2 sin credito
+				var idParent	= results[0].get("idParent");	//idParent id del Usuario jefe
+				var idTipo		= results[0].get("idTipo");		//idTipo id del tipo de usuario
+				var telefono	= results[0].get("telefono");
+				
+				//verificando si el usuario esta activo
+				if(estado==1){
+						
+					//introduciendo por defecto el dispositivo de la web o buscar funcion para buscar capturar la IP del equipo
+					var dispositivo="web";
 					
-					//variables a usar en la tabla de logins
-					if(estado==1){
-						/*
-						*introduciendo por defecto el dispositivo de la web o buscar funcion para buscar capturar la IP del equipo
-						*/
-						var dispositivo="web";
-						/*
-						*fin introduciendo por defecto el dispositivo de la web
-						*/
-						var RegLogin = Parse.Object.extend("Login");
-						var regLogin = new RegLogin();
-						//cargando informacion en la clase Login
-						regLogin.save({
-							//estos son los campos que se llenan para el registro de los logins de los usuarios o clientes
-							code_login: user.id,
-							senderapp_login: dispositivo,
-							status_login: true
-						});
-						//creandoo variables para la comunicacion
-						var RegComunicacion=Parse.Object.extend("comunicacion");
-						var regComunicacion=new RegComunicacion();
-						regComunicacion.save({
-							//campos a llenar el la comunicacion
-							nro_cel_operador_com: name,
-							senderapp_com: dispositivo
-						},{
+					var RegLogin = Parse.Object.extend("Login");
+					var regLogin = new RegLogin();
+					
+					//cargando informacion en la clase Login
+					regLogin.save({
+						//estos son los campos que se llenan para el registro de los logins de los usuarios o clientes
+						code_login: user.id,
+						senderapp_login: dispositivo,
+						status_login: true
+					});
+						
+					//creandoo variables para la comunicacion
+					var RegComunicacion=Parse.Object.extend("comunicacion");
+					var regComunicacion=new RegComunicacion();
+					regComunicacion.save({
+						//campos a llenar el la comunicacion
+						nro_cel_operador_com: name,
+						senderapp_com: dispositivo
+					},{
 						success: function(regComunicacion)
 						{
 							/*
@@ -85,79 +71,78 @@ app.post('/principal', function(req, res) {
 							*a responder al dispositivo en funcion de su balance
 							*/
 							var queryCuentas=new Parse.Query("Cuentas");
+							
 							queryCuentas.equalTo("usuario",name);
 							queryCuentas.find().then(function(results){
-									var balance_cuentas=results[0].get("balance");
-									//
-									var code=0;
-									if(balance_cuentas==0){
-										code=4;
+								var balance_cuentas=results[0].get("balance");
+								//
+								var code=0;
+								if(balance_cuentas==0){
+									code=4;
+								}else{
+									if(balance_cuentas<=50){
+										code=3;
 									}else{
-										if(balance_cuentas<=50){
-											code=3;
+										if(balance_cuentas<=100){
+											code=2;
 										}else{
-											if(balance_cuentas<=100){
-												code=2;
+											if(balance_cuentas<=150){
+												code=1;
 											}else{
-												if(balance_cuentas<=150){
-													code=1;
-												}else{
-													if(balance_cuentas>150){
-														code=0;
-													}
+												if(balance_cuentas>150){
+													code=0;
 												}
 											}
 										}
 									}
-									/*
-									*Realizando una consulta a la clase "Menasaje"
-									*para despachar un mesaje segun su codigo
-									*/
-									var queryMensajes=new Parse.Query("Mensajes");
-									queryMensajes.equalTo("codigo",code);
-									queryMensajes.find().then(function(results){
-											//var queryCuentas
-											var sMensaje=results[0].get("mensaje");
-											var sCode=results[0].get("codigo");
-											var respuesta={"code":sCode,"Balances":balance_cuentas,"mensaje":sMensaje,"key":regComunicacion.id};
-											//response.success(respuesta);
-											//res.render('logins', {codigo:sCode,balance:balance_cuentas,texto:sMensaje,key:regComunicacion.id,operador:name});
-											res.render('principal', {salida:"estas dentro",usuario:req.body.usuario,password:req.body.password});
+								}
+								/*
+								*Realizando una consulta a la clase "Menasaje"
+								*para despachar un mesaje segun su codigo
+								*/
+								var queryMensajes=new Parse.Query("Mensajes");
+								queryMensajes.equalTo("codigo",code);
+								queryMensajes.find().then(function(results){
+									//var queryCuentas
+									var sMensaje=results[0].get("mensaje");
+									var sCode=results[0].get("codigo");
+									var respuesta={"code":sCode,"Balances":balance_cuentas,"mensaje":sMensaje,"key":regComunicacion.id};
+									//response.success(respuesta);
+									//res.render('logins', {codigo:sCode,balance:balance_cuentas,texto:sMensaje,key:regComunicacion.id,operador:name});
+									res.render('principal', {salida:"estas dentro",usuario:req.body.usuario,password:req.body.password});
 
-									});	
+								});	
 							});
 						},
 						error: function(user, error) {
-						//falla del logeo
+						//falla del login
 							res.render('mensajes', {salida:"ERROR NO SE PUDO REALIZAR LA OPERACION"});
 							//response.error("login incorrecto");
 						}
-						});
-					}
-					else{
-						//response.success("su cuenta no esta activa!");
-						//res.render('gonzalo', {salida:"error de logueo"});
-						res.render('mensajes', {salida:"SU CUENTA NO SE ENCUENTRA ACTIVA COMUNIQUESE CON SU PROBEEDOR PARA DAR SOLUCION AL PROBLEMA"});
-					}
+					});
+				}
+				else{
+					//si el usuario no esta activo
+					res.render('mensajes', {salida:"SU CUENTA NO SE ENCUENTRA ACTIVA COMUNIQUESE CON SU PROBEEDOR PARA DAR SOLUCION AL PROBLEMA"});
+				}
 			});
 		},
 		error: function(user, error) {
-		//falla del logeo
+			///no login
 			res.render('mensajes', {salida:"DATOS NO VALIDOS !!!"});
-			//response.error("login incorrecto");
 		}
 	});
 });
 
 /*
-*funcion de logeo
+*funcion de login
 */
 app.post('/logins', function(req, res) {
 	var usuario_i=req.body.usuario;
 	var password_i=req.body.password;
 	Parse.User.logIn(usuario_i, password_i, {
 		success: function(user) {
-			//res.render('logins', {salida: "hola amigo  "+ user.id});
+			
 			//añadiendo la funcion completa del login
 			var query=new Parse.Query("User");
 			query.equalTo("objectId",user.id);
@@ -171,13 +156,12 @@ app.post('/logins', function(req, res) {
 					
 					//variables a usar en la tabla de logins
 					if(estado==1){
-						/*
-						*introduciendo por defecto el dispositivo de la web
-						*/
+						
+						//introduciendo por defecto el dispositivo de la web
+						
 						var dispositivo="web";
-						/*
-						*fin introduciendo por defecto el dispositivo de la web
-						*/
+						
+						//fin introduciendo por defecto el dispositivo de la web
 						var RegLogin = Parse.Object.extend("Login");
 						var regLogin = new RegLogin();
 						//cargando informacion en la clase Login
