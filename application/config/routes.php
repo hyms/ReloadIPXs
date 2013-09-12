@@ -38,9 +38,9 @@
 |
 */
 
-$route['default_controller'] = "user";
+$route['default_controller'] = "recarga";
 $route['404_override'] = '';
-$route['users'] = "user";
+$route['recarga/recargas'] = "recarga/recargas";
 
 
 /* End of file routes.php */
