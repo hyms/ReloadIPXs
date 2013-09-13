@@ -5,7 +5,13 @@
 </head>
 <body>
 <menu>
-	<li>Recargas</li>
-	<li>Login</li>
+	<li><?php echo anchor('', 'Recarga') ?></li>
+	
+	<?php if (!$login): ?>
+	<li><?php echo anchor('user', 'Login') ?></li>
+	<?php else: ?>
+	<li><?php echo anchor('user/logout', 'Logout') ?></li>
+	<?php endif; ?>
+	
 </menu>
 <h2><?php echo $titulo ?></h2>

@@ -6,7 +6,7 @@ echo form_open('recarga/recargas');
 $mobile = array('id' => 'mobile_id','name' => 'mobileNumber','maxlength' => '8', 'type'=>'text');
 $operator = 'operator';
 $amount = array('id' => 'amount_id','name' => 'amount','maxlength' => '4', 'type'=>'text');
-$input = array('id' => 'input_id','name' => 'input');
+$submit = array('id' => 'submit_id','name' => 'submit');
 ?>
 
 <dl><dt>
@@ -39,7 +39,7 @@ $input = array('id' => 'input_id','name' => 'input');
 </dd>
 </dl>
 <?php 
-echo form_submit($input,'Procesar Recarga');
+echo form_submit($submit,'Procesar Recarga');
 echo form_close();
 ?>
 

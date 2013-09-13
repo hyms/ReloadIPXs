@@ -41,7 +41,8 @@
 $route['default_controller'] = "recarga";
 $route['404_override'] = '';
 $route['recarga/recargas'] = "recarga/recargas";
-
+$route['user'] = 'user';
+//$route['user/login'] = "user/login";
 
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
