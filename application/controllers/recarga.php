@@ -22,11 +22,11 @@ class recarga extends CI_Controller {
 		$destino_cuenta = "";//&cuenta=9"
 		$url = $url .$iduser .$destino .$monto .$cuenta .$destino_cuenta;
 		//echo $url;
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 		
-		if($response[0] <= -1)
+		if($response['respuesta'] <= -1)
 		{
-			$this->show_recarga($response[1]);
+			$this->show_recarga($response['resultado']);
 		}
 		else 
 		{
@@ -54,11 +54,11 @@ class recarga extends CI_Controller {
 		$cuenta = "";//&cuenta=9";
 		$url = $url .$iduser .$monto .$cuenta;
 		//echo $url;
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 		
-		if($response[0] <= -1)
+		if($response['respuesta'] <= -1)
 		{
-			$this->show_recarga($response[1]);
+			$this->show_recarga($response['resultado']);
 		}
 		else
 		{
@@ -97,6 +97,12 @@ class recarga extends CI_Controller {
 		$this->load->view('footer',$res);
 	}
 	
+	private function set_key($result)
+	{
+		$data = array('idSession'=>$result);
+		$this->session->set_userdata($data);
+	}
+	
 	private function fn_curl($url)
 	{
 		$ch = curl_init($url);
@@ -106,8 +112,14 @@ class recarga extends CI_Controller {
 		curl_setopt($ch, CURLOPT_COOKIEFILE,"cookie.txt"); // sesión
 		curl_setopt($ch, CURLOPT_COOKIESESSION, "cookie.txt"); // sesión
 		$response = curl_exec($ch);
+		$response = json_decode($response,true);
 		curl_close($ch);
-			
+		if($response && $this->session->userdata('isLoggedIn'))
+		{
+			$this->set_key($response['llave']);
+			//echo $response['llave'];
+		}
+		
 		return $response;
 	}
 	

@@ -36,27 +36,25 @@ class user extends CI_Controller {
 		$password = "&password=".$this->input->post('password');
 		$url = $url .$username.$password;
 		$response = $this->fn_curl($url);
-		$response = json_decode($response,true);
 		
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//si no es usuario se ve si es cliente
 			$telefono = "&msisdn=".$this->input->post('username');
 			$pin = "&PIN=".$this->input->post('password');
 			$url = $url .$username.$password;
-			$response = $this->fn_curl($url);
-			$response = json_decode($response,true);
+			$response = $this->fn_curl($url); 
 		}
 		
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_login($response[1]);
+			$this->show_login($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			$this->set_session($response[1]);
+			$this->set_session($response['resultado']);
 			redirect('user');
 		}
 		
@@ -94,18 +92,17 @@ class user extends CI_Controller {
 			$tipo = "&tipo=".$this->input->post('tipo');
 			
 			$url = $url . $docIdentidad . $nombre . $apellido . $tipo;
+			$response = $this->fn_curl($url);
 			
-			$response = json_decode($this->fn_curl($url),true);
-			
-			if($response[0]<="-1")
+			if($response['respuesta']<="-1")
 			{
 				//hubo un error en la operacion
-				$this->show_create($response[1]);
+				$this->show_create($response['resultado']);
 			}
 			else
 			{
 				//operacion exitosa
-				//$this->show_create($response[1]);
+				//$this->show_create($response['resultado']);
 				redirect('user');
 			}
 		}
@@ -131,17 +128,17 @@ class user extends CI_Controller {
 			$password = "&password=".$this->input->post('password');
 			$url = $url .$id .$username .$password;
 			
-			$response = json_decode($this->fn_curl($url),true);
+			$response = $this->fn_curl($url);
 				
-			if($response[0]<="-1")
+			if($response['respuesta']<="-1")
 			{
 				//hubo un error en la operacion
-				$this->show_create_login($response[1]);
+				$this->show_create_login($response['resultado']);
 			}
 			else
 			{
 				//operacion exitosa
-				//$this->show_create($response[1]);
+				//$this->show_create($response['resultado']);
 				redirect('user');
 			}
 		}
@@ -159,17 +156,17 @@ class user extends CI_Controller {
 		$id = "&id=".$id;
 		$url = $url .$id;
 		
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 			
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_create($response[1]);
+			$this->show_create($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			//$this->show_create($response[1]);
+			//$this->show_create($response['resultado']);
 			redirect('user');
 		}
 	}
@@ -186,17 +183,17 @@ class user extends CI_Controller {
 		$id = "&id=".$id;
 		$url = $url .$id;
 		
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 			
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_create($response[1]);
+			$this->show_create($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			//$this->show_create($response[1]);
+			//$this->show_create($response['resultado']);
 			redirect('user');
 		}
 	}
@@ -244,7 +241,13 @@ class user extends CI_Controller {
 	
 	private function set_session($result)
 	{
-		$data = array('id'=>$result[0],'idSession'=>$result[1],'isLoggedIn'=>TRUE);
+		$data = array('id'=>$result['id'],'idSession'=>$result['llave'],'isLoggedIn'=>TRUE,'tipo'=>$result['tipo']);
+		$this->session->set_userdata($data);
+	}
+	
+	private function set_key($result)
+	{
+		$data = array('idSession'=>$result);
 		$this->session->set_userdata($data);
 	}
 	
@@ -257,7 +260,13 @@ class user extends CI_Controller {
 		curl_setopt($ch, CURLOPT_COOKIEFILE,"cookie.txt"); // sesión
 		curl_setopt($ch, CURLOPT_COOKIESESSION, "cookie.txt"); // sesión
 		$response = curl_exec($ch);
+		$response = json_decode($response,true);
 		curl_close($ch);
+		if($response && $this->session->userdata('isLoggedIn'))
+		{
+			$this->set_key($response['llave']);
+			//echo $response['llave'];
+		}
 		
 		return $response;
 	}
@@ -269,7 +278,7 @@ class user extends CI_Controller {
 		
 		$response = $this->fn_curl($url);
 		
-		return json_decode($response,true);
+		return $response['resultado'];
 	}
 }
 /* End of file users.php */

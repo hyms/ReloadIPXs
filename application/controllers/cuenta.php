@@ -24,17 +24,17 @@ class cuenta extends CI_Controller {
 	
 		$url = $url .$id .$comision_tipo .$comision .$nombre;
 	
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 			
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_create($response[1]);
+			$this->show_create($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			//$this->show_create($response[1]);
+			//$this->show_create($response['resultado']);
 			redirect('user');
 		}
 	}
@@ -52,17 +52,17 @@ class cuenta extends CI_Controller {
 		$cuenta = "&cuenta=".$cuenta;
 		$url = $url .$cuenta;
 	
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 			
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_create($response[1]);
+			$this->show_create($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			//$this->show_create($response[1]);
+			//$this->show_create($response['resultado']);
 			redirect('user');
 		}
 	}
@@ -80,17 +80,17 @@ class cuenta extends CI_Controller {
 		$cuenta = "&cuenta=".$cuenta;
 		$url = $url .$cuenta;
 	
-		$response = json_decode($this->fn_curl($url),true);
+		$response = $this->fn_curl($url);
 			
-		if($response[0]<="-1")
+		if($response['respuesta']<="-1")
 		{
 			//hubo un error en la operacion
-			$this->show_create($response[1]);
+			$this->show_create($response['resultado']);
 		}
 		else
 		{
 			//operacion exitosa
-			//$this->show_create($response[1]);
+			//$this->show_create($response['resultado']);
 			redirect('user');
 		}
 	}
@@ -108,6 +108,12 @@ class cuenta extends CI_Controller {
 		$this->load->view('footer',$res);
 	}
 	
+	private function set_key($result)
+	{
+		$data = array('idSession'=>$result);
+		$this->session->set_userdata($data);
+	}
+	
 	private function fn_curl($url)
 	{
 		$ch = curl_init($url);
@@ -117,8 +123,14 @@ class cuenta extends CI_Controller {
 		curl_setopt($ch, CURLOPT_COOKIEFILE,"cookie.txt"); // sesión
 		curl_setopt($ch, CURLOPT_COOKIESESSION, "cookie.txt"); // sesión
 		$response = curl_exec($ch);
+		$response = json_decode($response,true);
 		curl_close($ch);
-			
+		if($response && $this->session->userdata('isLoggedIn'))
+		{
+			$this->set_key($response['llave']);
+			//echo $response['llave'];
+		}
+		
 		return $response;
 	}
 }
