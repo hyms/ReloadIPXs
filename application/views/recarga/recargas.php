@@ -42,4 +42,6 @@ $submit = array('id' => 'submit_id','name' => 'submit');
 echo form_submit($submit,'Procesar Recarga');
 echo form_close();
 ?>
-
+<dd>
+	<span id="amount_err_span" class="error-redlt fright"><?php echo $error ?></span>
+</dd>

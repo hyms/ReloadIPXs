@@ -14,17 +14,16 @@ class recarga extends CI_Controller {
 			redirect('user');
 		}
 		
-		$url = "http://63.247.95.44/martin/funciones.php?funcion=recargar&".$this->session->userdata('idSession');
-		$iduser = "id=6";//.$this->session->userdata('id');
-		$destino = "destino=7";
-		$monto = "monto=". $this->input->post('amount');
-		$cuenta = "cuenta=9";
-		$destino_cuenta = "destino_cuenta=12";
-		$url = $url ."&".$iduser."&".$destino."&".$monto."&".$cuenta."&".$destino_cuenta;
+		$url = "http://63.247.95.44/martin/funciones.php?funcion=transferir&".$this->session->userdata('idSession');
+		$iduser = "&id=".$this->session->userdata('id');
+		$destino = "&destino=".$this->input->post('mobileNumber');
+		$monto = "&monto=". $this->input->post('amount');
+		$cuenta = "";//&cuenta=9";
+		$url = $url .$iduser.$destino.$monto.$cuenta;
+		//echo $url;
+		$response = json_decode($this->fn_curl($url),true);
 		
-		$response = $this->fn_curl($url);
-		
-		if($response[0] < 0)
+		if($response[0] <= -1)
 		{
 			$this->show_recarga($response[1]);
 		}
@@ -32,7 +31,7 @@ class recarga extends CI_Controller {
 		{
 			$res['titulo'] = "Recargas";
 			$res['login'] = $this->session->userdata('isLoggedIn');
-			$res['result'] = json_decode($response,true);
+			$res['result'] = $response;
 				
 			$this->load->view('header',$res);
 			$this->load->view('result',$res);
@@ -45,6 +44,7 @@ class recarga extends CI_Controller {
 		$res['titulo'] = "Recargas";
 		$res['operadora'] = array("Entel","Viva","Tigo");
 		$res['login'] = $this->session->userdata('isLoggedIn');
+		$res['error'] = $error;
 		
 		$this->load->helper('form');
 		$this->load->view('header',$res);
