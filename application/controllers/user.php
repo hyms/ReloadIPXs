@@ -147,39 +147,7 @@ class user extends CI_Controller {
 		}
 	} 
 	
-	public function crear_cuenta($id = "")
-	{
-		//verificacion de session
-		if(!$this->session->userdata('isLoggedIn'))
-		{
-			redirect('user');
-		}
-		
-		$url = "http://63.247.95.44/martin/funciones.php?funcion=crear_usuario_cuenta";
-		$url = $url . "&". $this->session->userdata('idSession');
-		$id = "&id=".$id;
-		$comision_tipo = "&comision_tipo=".$this->input->post('');
-		$comision = "&comision=".$this->input->post('');
-		$nombre = "&nombre=".$this->input->post('');
-		
-		$url = $url .$id .$comision_tipo .$comision .$nombre;
-		
-		$response = json_decode($this->fn_curl($url),true);
-			
-		if($response[0]<="-1")
-		{
-			//hubo un error en la operacion
-			$this->show_create($response[1]);
-		}
-		else
-		{
-			//operacion exitosa
-			//$this->show_create($response[1]);
-			redirect('user');
-		}
-	}
-	
-	public function habilitar_usuario($id = "")
+	public function habilitar($id = "")
 	{
 		//verificacion de session
 		if(!$this->session->userdata('isLoggedIn'))
@@ -206,7 +174,7 @@ class user extends CI_Controller {
 		}
 	}
 	
-	public function deshabilitar_usuario($id = "")
+	public function deshabilitar($id = "")
 	{
 		//verificacion de session
 		if(!$this->session->userdata('isLoggedIn'))
@@ -217,62 +185,6 @@ class user extends CI_Controller {
 		$url = $url . "&". $this->session->userdata('idSession');
 		$id = "&id=".$id;
 		$url = $url .$id;
-		
-		$response = json_decode($this->fn_curl($url),true);
-			
-		if($response[0]<="-1")
-		{
-			//hubo un error en la operacion
-			$this->show_create($response[1]);
-		}
-		else
-		{
-			//operacion exitosa
-			//$this->show_create($response[1]);
-			redirect('user');
-		}
-	}
-	
-	public function habilitar_cuenta($id = "", $cuenta = "")
-	{
-		//verificacion de session
-		if(!$this->session->userdata('isLoggedIn'))
-		{
-			redirect('user');
-		}
-		
-		$url = "http://63.247.95.44/martin/funciones.php?funcion=crear_usuario_cuenta";
-		$url = $url . "&". $this->session->userdata('idSession');
-		$cuenta = "&cuenta=".$cuenta;
-		$url = $url .$cuenta;
-		
-		$response = json_decode($this->fn_curl($url),true);
-			
-		if($response[0]<="-1")
-		{
-			//hubo un error en la operacion
-			$this->show_create($response[1]);
-		}
-		else
-		{
-			//operacion exitosa
-			//$this->show_create($response[1]);
-			redirect('user');
-		}
-	}
-	
-	public function deshabilitar_cuenta($id = "", $cuenta = "")
-	{
-		//verificacion de session
-		if(!$this->session->userdata('isLoggedIn'))
-		{
-			redirect('user');
-		}
-		
-		$url = "http://63.247.95.44/martin/funciones.php?funcion=crear_usuario_cuenta";
-		$url = $url . "&". $this->session->userdata('idSession');
-		$cuenta = "&cuenta=".$cuenta;
-		$url = $url .$cuenta;
 		
 		$response = json_decode($this->fn_curl($url),true);
 			

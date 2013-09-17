@@ -19,7 +19,8 @@ class recarga extends CI_Controller {
 		$destino = "&destino=".$this->input->post('mobileNumber');
 		$monto = "&monto=". $this->input->post('amount');
 		$cuenta = "";//&cuenta=9";
-		$url = $url .$iduser.$destino.$monto.$cuenta;
+		$destino_cuenta = "";//&cuenta=9"
+		$url = $url .$iduser .$destino .$monto .$cuenta .$destino_cuenta;
 		//echo $url;
 		$response = json_decode($this->fn_curl($url),true);
 		
@@ -33,6 +34,38 @@ class recarga extends CI_Controller {
 			$res['login'] = $this->session->userdata('isLoggedIn');
 			$res['result'] = $response;
 				
+			$this->load->view('header',$res);
+			$this->load->view('result',$res);
+			$this->load->view('footer',$res);
+		}
+	}
+	
+	public function transferir()
+	{
+		//si no paso en LogIn
+		if(!$this->session->userdata('isLoggedIn'))
+		{
+			redirect('user');
+		}
+		
+		$url = "http://63.247.95.44/martin/funciones.php?funcion=recargar&".$this->session->userdata('idSession');
+		$iduser = "&id=".$this->session->userdata('id');
+		$monto = "&monto=". $this->input->post('amount');
+		$cuenta = "";//&cuenta=9";
+		$url = $url .$iduser .$monto .$cuenta;
+		//echo $url;
+		$response = json_decode($this->fn_curl($url),true);
+		
+		if($response[0] <= -1)
+		{
+			$this->show_recarga($response[1]);
+		}
+		else
+		{
+			$res['titulo'] = "Recargas";
+			$res['login'] = $this->session->userdata('isLoggedIn');
+			$res['result'] = $response;
+		
 			$this->load->view('header',$res);
 			$this->load->view('result',$res);
 			$this->load->view('footer',$res);
