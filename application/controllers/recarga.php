@@ -85,6 +85,18 @@ class recarga extends CI_Controller {
 		$this->load->view('footer',$res);
 	}
 	
+	private function show_transferir($error = FALSE)
+	{
+		$res['titulo'] = "Transferencias";
+		$res['login'] = $this->session->userdata('isLoggedIn');
+		$res['error'] = $error;
+	
+		$this->load->helper('form');
+		$this->load->view('header',$res);
+		$this->load->view('recarga/transferir',$res);
+		$this->load->view('footer',$res);
+	}
+	
 	private function fn_curl($url)
 	{
 		$ch = curl_init($url);
