@@ -28,15 +28,9 @@ class recarga extends CI_Controller {
 		{
 			$this->show_recarga($response['resultado']);
 		}
-		else 
+		else
 		{
-			$res['titulo'] = "Recargas";
-			$res['login'] = $this->session->userdata('isLoggedIn');
-			$res['result'] = $response;
-				
-			$this->load->view('header',$res);
-			$this->load->view('result',$res);
-			$this->load->view('footer',$res);
+			$this->show_resultado($response);
 		}
 	}
 	
@@ -62,13 +56,7 @@ class recarga extends CI_Controller {
 		}
 		else
 		{
-			$res['titulo'] = "Recargas";
-			$res['login'] = $this->session->userdata('isLoggedIn');
-			$res['result'] = $response;
-		
-			$this->load->view('header',$res);
-			$this->load->view('result',$res);
-			$this->load->view('footer',$res);
+			$this->show_resultado($response);
 		}
 	}
 	
@@ -76,6 +64,7 @@ class recarga extends CI_Controller {
 	{
 		$res['titulo'] = "Recargas";
 		$res['operadora'] = array("Entel","Viva","Tigo");
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['login'] = $this->session->userdata('isLoggedIn');
 		$res['error'] = $error;
 		
@@ -88,12 +77,24 @@ class recarga extends CI_Controller {
 	private function show_transferir($error = FALSE)
 	{
 		$res['titulo'] = "Transferencias";
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['login'] = $this->session->userdata('isLoggedIn');
 		$res['error'] = $error;
 	
 		$this->load->helper('form');
 		$this->load->view('header',$res);
 		$this->load->view('recarga/transferir',$res);
+		$this->load->view('footer',$res);
+	}
+	
+	private function show_resultado($resultado = FALSE)
+	{
+		$res['titulo'] = "Recargas";
+		$res['login'] = $this->session->userdata('isLoggedIn');
+		$res['result'] = $resultado;
+		
+		$this->load->view('header',$res);
+		$this->load->view('result',$res);
 		$this->load->view('footer',$res);
 	}
 	

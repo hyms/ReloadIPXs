@@ -10,13 +10,7 @@ class user extends CI_Controller {
 		}
 		else 
 		{
-			$res['titulo'] = "Login";
-			$res['result'] = "Operacion realizada exitosamente";
-			$res['login'] = $this->session->userdata('isLoggedIn');
-			//operacion exitosa
-			$this->load->view('header',$res);
-			$this->load->view('result',$res);
-			$this->load->view('footer',$res);
+			$this->show_lista();
 		}
 	}
 	
@@ -201,6 +195,7 @@ class user extends CI_Controller {
 	private function show_login($error = FALSE)
 	{
 		$res['titulo'] = "Login";
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['login'] = $this->session->userdata('isLoggedIn');
 		if(!$error)
 			$error = "";
@@ -214,6 +209,7 @@ class user extends CI_Controller {
 	private function show_create_login($error = FALSE)
 	{
 		$res['titulo'] = "Crear Login";
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['login'] = $this->session->userdata('isLoggedIn');
 		if(!$error)
 			$error = "";
@@ -228,6 +224,7 @@ class user extends CI_Controller {
 	{
 		$res['titulo'] = "Crear Usuario";
 		$res['login'] = $this->session->userdata('isLoggedIn');
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['tipo'] = $this->listar_tipo();
 		
 		if(!$error)
@@ -238,6 +235,25 @@ class user extends CI_Controller {
 		$this->load->view('usuario/crear',$res);
 		$this->load->view('footer',$res);
 	} 
+	
+	private function show_lista($resultado = FALSE)
+	{
+		$res['titulo'] = "Lista de Usuarios";
+		$res['tipoUser'] = $this->session->userdata('tipo');
+		if($res['tipoUser'] == 1)
+			$res['result'] = $this->listar_distribuidores();
+		elseif ($res['tipoUser'] == 2)
+			$res['result'] = $this->listar_revendedores();
+		else 
+			$res['result'] = "operacion correcta";
+		$res['login'] = $this->session->userdata('isLoggedIn');
+		
+		//operacion exitosa
+		$this->load->view('header',$res);
+		$this->load->view('usuario/lista',$res);
+		//$this->load->view('result',$res);
+		$this->load->view('footer',$res);
+	}
 	
 	private function set_session($result)
 	{
@@ -280,6 +296,27 @@ class user extends CI_Controller {
 		
 		return $response['resultado'];
 	}
+	
+	private function listar_distribuidores()
+	{
+		$url = "http://63.247.95.44/martin/funciones.php?funcion=listar_distribuidores&";
+		$url = $url.$this->session->userdata('idSession');
+		
+		$response = $this->fn_curl($url);
+		
+		return $response['resultado'];
+	}
+	
+	private function listar_revendedores()
+	{
+		$url = "http://63.247.95.44/martin/funciones.php?funcion=listar_revendedores&";
+		$url = $url.$this->session->userdata('idSession');
+		
+		$response = $this->fn_curl($url);
+		
+		return $response['resultado'];
+	}
+	
 }
 /* End of file users.php */
 /* Location: ./application/controllers/users.php */

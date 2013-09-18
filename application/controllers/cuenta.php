@@ -98,6 +98,7 @@ class cuenta extends CI_Controller {
 	private function show_create($error = FALSE)
 	{
 		$res['titulo'] = "Crear Cuenta";
+		$res['tipoUser'] = $this->session->userdata('tipo');
 		$res['login'] = $this->session->userdata('isLoggedIn');
 		if(!$error)
 			$error = "";

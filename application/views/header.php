@@ -10,10 +10,12 @@
 	<?php if (!$login): ?>
 	<li><?php echo anchor('user', 'Login') ?></li>
 	<?php else: ?>
-	<li><?php echo anchor('user/crear', 'Crear Usuario') ?></li>
-	<li><?php echo anchor('cuenta/crear', 'Crear Cuenta') ?></li>
-	<li><?php echo anchor('user/crear_login', 'Crear Login') ?></li>
-	<li><?php echo anchor('user/logout', 'Logout') ?></li>
+		<?php if ($tipoUser == 4): ?>
+			<li><?php echo anchor('user/crear', 'Crear Usuario') ?></li>
+			<li><?php echo anchor('cuenta/crear', 'Crear Cuenta') ?></li>
+			<li><?php echo anchor('user/crear_login', 'Crear Login') ?></li>
+		<?php endif; ?>
+		<li><?php echo anchor('user/logout', 'Logout') ?></li>
 	<?php endif; ?>
 	
 </menu>
