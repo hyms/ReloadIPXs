@@ -5,11 +5,14 @@ ini_set('session.use_only_cookies', 0);
 ini_set('session.use_trans_sid', 0);
 session_start();
 
+//operaciones db
 function db_connect()
 {
 	pg_connect("host=localhost dbname=recarga user=postgres password=") or die('Could not connect: ' . pg_last_error());
 }
 
+
+//listas
 function listar_usuarios_tipos()
 {
 	verificar_session();
@@ -17,12 +20,15 @@ function listar_usuarios_tipos()
 	$query = 'SELECT id,nombre FROM usuarios_tipos';
 	$result = pg_query($query) or die('Query failed: ' . pg_last_error());
 	$resultArray = array();
+	
 	while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)) {
 		$resultArray[] = $row;
 	}
+	
 	pg_free_result($result);
 	respuesta_json("0", $resultArray);
 }
+
 function listar_distribuidores()
 {
     verificar_session();
@@ -30,12 +36,15 @@ function listar_distribuidores()
     $query = 'select u.id,u.estado,d.nombre,d.apellido,d."docIdentidad" from usuarios u, usuarios_datos d where u.id=d.id and u.estado and u.tipo=1';
     $result = pg_query($query) or die('Query failed: ' . pg_last_error());
     $resultArray = array();
+    
     while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)) {
         $resultArray[] = $row;
     }
+    
     pg_free_result($result);
     respuesta_json("0", $resultArray);
 }
+
 function listar_revendedores()
 {
     verificar_session();
@@ -45,12 +54,228 @@ function listar_revendedores()
 		$query .= " and u.id in (select revendedor from revendedores_por_distribuidor where distribuidor=".$_SESSION['id'].")";
     $result = pg_query($query) or die('Query failed: ' . pg_last_error());
     $resultArray = array();
+    
     while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)) {
         $resultArray[] = $row;
     }
+    
     pg_free_result($result);
     respuesta_json("0", $resultArray);
 }
+
+function reporte()
+{
+	verificar_session();
+	
+	$query = 'select u.id,u.estado,d.nombre,d.apellido,d."docIdentidad" from usuarios u, usuarios_datos d where u.id=d.id and u.estado and u.tipo='.$_SESSION['tipo'];
+	
+	$result = pg_query($query) or die('Query failed: ' . pg_last_error());
+	$resultArray = array();
+	
+	while ($row = pg_fetch_array($result, null, PGSQL_ASSOC)) {
+		$resultArray[] = $row;
+	}
+	
+	pg_free_result($result);
+	respuesta_json("0", $resultArray);
+}
+
+//transacciones
+function recargar()
+{
+	verificar_session();
+
+	$id = verificar_id();
+	if(!usuario_habilitado($id))
+	{
+		respuesta_json("-4", "el id=$id no esta hablitado");
+	}
+
+	$monto = verificar_monto();
+
+	//cuenta
+	$nro_cuentas = usuarios_cuentas_cantidad($id);
+	if($nro_cuentas == 0)
+	{
+		respuesta_json("-1", "el id=$id aun no tiene cuentas");
+	}
+	else if($nro_cuentas == 1)
+	{
+		$result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$id", "id=$id no existe en usuarios_cuenta", false);
+		$row=pg_fetch_row($result);
+		$cuenta = $row[0];
+		pg_free_result($result);
+	}
+	else
+	{
+		if(!isset($_REQUEST['cuenta']))
+		{
+			respuesta_json("-4", "debe especificar el numero de cuenta");
+		}
+		$cuenta = trim($_REQUEST['cuenta']);
+		if(!($cuenta>0))
+		{
+			respuesta_json("-1", "Cuenta invalida");
+		}
+	}
+
+	if(!cuenta_habilitada($cuenta))
+	{
+		respuesta_json("-4", "la cuenta=$cuenta no esta hablitada");
+	}
+
+	$query = "UPDATE usuarios_cuentas SET saldo=saldo+$monto WHERE id=$cuenta";
+	$result=pg_query($query);
+	if(!$result)
+	{
+		respuesta_json("-3", "Error en el SQL $query");
+	}
+
+	respuesta_json("0", "Se ha acreditado $monto a la cuenta $cuenta");
+}
+
+function transferir()
+{
+	verificar_session();
+
+	$id = $_SESSION['id']; //verificar_id();
+	$monto = verificar_monto();
+
+	//tipo usuario
+	$tipo = $_SESSION['tipo']; //leer_usuario_tipo($id);
+	if(!($tipo==1 or $tipo==2))
+	{
+		respuesta_json("-4", "el id=$id es del tipo=$tipo y no puede realizar transferencias");
+	}
+
+	//cuenta
+	$nro_cuentas = usuarios_cuentas_cantidad($id);
+	if($nro_cuentas == 0)
+	{
+		respuesta_json("-1", "el id=$id aun no tiene cuentas");
+	}
+	else if($nro_cuentas == 1)
+	{
+		$result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$id", "id=$id no existe en usuarios_cuenta", false);
+		$row=pg_fetch_row($result);
+		$cuenta = $row[0];
+		pg_free_result($result);
+	}
+	else
+	{
+		if(!isset($_REQUEST['cuenta']))
+		{
+			respuesta_json("-4", "debe especificar el numero de cuenta");
+		}
+		$cuenta = trim($_REQUEST['cuenta']);
+		if(!($cuenta>0))
+		{
+			respuesta_json("-1", "Cuenta invalida");
+		}
+	}
+
+	if(!cuenta_habilitada($cuenta))
+	{
+		respuesta_json("-4", "la cuenta=$cuenta no esta hablitada");
+	}
+
+	//saldo
+	$saldo = leer_saldo($cuenta);
+	if($saldo < $monto)
+	{
+		respuesta_json("-1", "La cuenta=$cuenta tiene solo $saldo y no llega a $monto");
+	}
+
+	//comision
+	$comision = leer_comision($cuenta, $monto);
+
+	//destino
+	$destino = verificar_destino();
+	if(es_usuario_final($destino))
+	{
+		$tipo_destino = 3;
+		$operadora = leer_operadora($destino);
+	}
+	else
+	{
+		if(!usuario_habilitado($destino))
+		{
+			respuesta_json("-4", "el destino=$destino no esta hablitado");
+		}
+		$tipo_destino = leer_usuario_tipo($destino);
+		if($tipo_destino == 1)
+		{
+			respuesta_json("-4", "el id=$destino es del tipo=$tipo_destino y no puede recibir transferencias");
+		}
+	}
+
+	//destino cuenta
+	if($tipo_destino == 3) //si es usuario final
+	{
+		$query = "UPDATE usuarios_cuentas SET saldo=saldo-$monto, ganancia=ganancia+$comision WHERE id=$cuenta";
+		$result=pg_query($query);
+		if(!$result)
+		{
+			respuesta_json("-3", "Error en el SQL $query");
+		}
+
+		respuesta_json("0", "La transferencia de la cuenta $cuenta a la cuenta $destino_cuenta de la operadora $operadora por $monto con $comision de comision fue exitosa");
+	}
+	else
+	{
+		$nro_cuentas = usuarios_cuentas_cantidad($destino);
+		if($nro_cuentas == 0)
+		{
+			respuesta_json("-1", "el destino=$destino aun no tiene cuentas");
+		}
+		else if($nro_cuentas == 1)
+		{
+			$result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$destino", "destino=$destino no existe en usuarios_cuenta", false);
+			$row=pg_fetch_row($result);
+			$destino_cuenta = $row[0];
+			pg_free_result($result);
+		}
+		else
+		{
+			if(!isset($_REQUEST['destino_cuenta']))
+			{
+				respuesta_json("-4", "debe especificar el numero de cuenta de destino");
+			}
+			$destino_cuenta = trim($_REQUEST['destino_cuenta']);
+			if(!($destino_cuenta>0))
+			{
+				respuesta_json("-1", "Cuenta de destino invalida");
+			}
+		}
+
+		if(!cuenta_habilitada($destino_cuenta))
+		{
+			respuesta_json("-4", "la cuenta destino=$destino_cuenta no esta hablitada");
+		}
+
+		if($id == $destino)
+			$comision = 0; //Transferencia entre cuentas del mismo usuario
+
+		//acreditacion usuario local (distribuidor o revendedor)
+		$query = "UPDATE usuarios_cuentas SET saldo=saldo+($monto-$comision) WHERE id=$destino_cuenta";
+		$result=pg_query($query);
+		if(!$result)
+		{
+			respuesta_json("-3", "Error en el SQL $query");
+		}
+		$query = "UPDATE usuarios_cuentas SET saldo=saldo-$monto, ganancia=ganancia+$comision WHERE id=$cuenta";
+		$result=pg_query($query);
+		if(!$result)
+		{
+			respuesta_json("-3", "Error en el SQL $query");
+		}
+
+		respuesta_json("0", "La transferencia de la cuenta $cuenta a la cuenta $destino_cuenta por $monto con $comision de comision fue exitosa");
+	}
+}
+
+
+//operaciones con usuarios 
 function transferir_revendedor()
 {
 	verificar_session();
@@ -60,24 +285,28 @@ function transferir_revendedor()
     {
         respuesta_json("-4", "debe especificar el revendedor");
     }
+    
     $revendedor = trim($_REQUEST['revendedor']);
     if(!($revendedor>0))
     {
         respuesta_json("-1", "revendedor invalido");
     }
-	do_select("SELECT id FROM usuarios where id=$revendedor and tipo=2", "el revendedor $revendedor no existe", false);
+	
+    do_select("SELECT id FROM usuarios where id=$revendedor and tipo=2", "el revendedor $revendedor no existe", false);
 
     //distribuidor
     if(!isset($_REQUEST['distribuidor']))
     {
         respuesta_json("-4", "debe especificar el distribuidor");
     }
+    
     $distribuidor = trim($_REQUEST['distribuidor']);
     if(!($distribuidor>0))
     {
         respuesta_json("-1", "distribuidor invalido");
     }
-	do_select("SELECT id FROM usuarios where id=$distribuidor and tipo=1", "el distribuidor $distribuidor no existe", false);
+	
+    do_select("SELECT id FROM usuarios where id=$distribuidor and tipo=1", "el distribuidor $distribuidor no existe", false);
 
 	$query = "DELETE FROM revendedores_por_distribuidor WHERE revendedor=$revendedor";
 	pg_query($query);
@@ -100,12 +329,14 @@ function habilitar_usuario()
 
 	$query = "UPDATE usuarios SET estado=true WHERE id=$id";
     $result=pg_query($query);
+    
     if(!$result)
     {
         respuesta_json("-3", "Error en el SQL $query");
     }
 	respuesta_json("0", "El usuario $id ha sido habilitado");
 }
+
 function deshabilitar_usuario()
 {
     verificar_session();
@@ -124,9 +355,11 @@ function deshabilitar_usuario()
     }
     respuesta_json("0", "El usuario $id ha sido deshabilitado");
 }
+
 function habilitar_cuenta()
 {
     verificar_session();
+    
     if(!isset($_REQUEST['cuenta']))
     {
         respuesta_json("-4", "debe especificar el numero de cuenta");
@@ -149,9 +382,11 @@ function habilitar_cuenta()
     }
     respuesta_json("0", "La cuenta $id ha sido habilitado");
 }
+
 function deshabilitar_cuenta()
 {
     verificar_session();
+    
     if(!isset($_REQUEST['cuenta']))
     {
         respuesta_json("-4", "debe especificar el numero de cuenta");
@@ -173,200 +408,6 @@ function deshabilitar_cuenta()
         respuesta_json("-3", "Error en el SQL $query");
     }
     respuesta_json("0", "La cuenta $id ha sido deshabilitado");
-}
-
-
-function recargar()
-{
-	verificar_session();
-
-	$id = verificar_id();
-    if(!usuario_habilitado($id))
-    {
-        respuesta_json("-4", "el id=$id no esta hablitado");
-    }
-
-	$monto = verificar_monto();
-
-    //cuenta
-    $nro_cuentas = usuarios_cuentas_cantidad($id);
-    if($nro_cuentas == 0)
-    {
-        respuesta_json("-1", "el id=$id aun no tiene cuentas");
-    }
-    else if($nro_cuentas == 1)
-    {
-        $result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$id", "id=$id no existe en usuarios_cuenta", false);
-        $row=pg_fetch_row($result);
-        $cuenta = $row[0];
-		pg_free_result($result);
-    }
-    else
-    {
-        if(!isset($_REQUEST['cuenta']))
-        {
-            respuesta_json("-4", "debe especificar el numero de cuenta");
-        }
-        $cuenta = trim($_REQUEST['cuenta']);
-        if(!($cuenta>0))
-        {
-            respuesta_json("-1", "Cuenta invalida");
-        }
-    }
-
-    if(!cuenta_habilitada($cuenta))
-    {
-        respuesta_json("-4", "la cuenta=$cuenta no esta hablitada");
-    }
-
-	$query = "UPDATE usuarios_cuentas SET saldo=saldo+$monto WHERE id=$cuenta";
-    $result=pg_query($query);
-    if(!$result)
-    {
-        respuesta_json("-3", "Error en el SQL $query");
-    }
-
-	respuesta_json("0", "Se ha acreditado $monto a la cuenta $cuenta");
-}
-
-function transferir()
-{
-	verificar_session();
-
-	$id = $_SESSION['id']; //verificar_id();
-	$monto = verificar_monto();
-
-	//tipo usuario
-    $tipo = $_SESSION['tipo']; //leer_usuario_tipo($id);
-    if(!($tipo==1 or $tipo==2))
-    {
-        respuesta_json("-4", "el id=$id es del tipo=$tipo y no puede realizar transferencias");
-    }
-
-	//cuenta
-	$nro_cuentas = usuarios_cuentas_cantidad($id);
-	if($nro_cuentas == 0)
-	{
-		respuesta_json("-1", "el id=$id aun no tiene cuentas");
-	}
-	else if($nro_cuentas == 1)
-	{
-		$result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$id", "id=$id no existe en usuarios_cuenta", false);
-    	$row=pg_fetch_row($result);
-    	$cuenta = $row[0];
-		pg_free_result($result);
-	}
-	else
-	{
-		if(!isset($_REQUEST['cuenta']))
-		{
-			respuesta_json("-4", "debe especificar el numero de cuenta");
-		}
-		$cuenta = trim($_REQUEST['cuenta']);
-	    if(!($cuenta>0))
-    	{
-        	respuesta_json("-1", "Cuenta invalida");
-    	}
-	}
-
-    if(!cuenta_habilitada($cuenta))
-    {
-        respuesta_json("-4", "la cuenta=$cuenta no esta hablitada");
-    }
-
-	//saldo
-    $saldo = leer_saldo($cuenta);
-    if($saldo < $monto)
-    {
-        respuesta_json("-1", "La cuenta=$cuenta tiene solo $saldo y no llega a $monto");
-    }
-
-	//comision
-    $comision = leer_comision($cuenta, $monto);
-
-	//destino
-    $destino = verificar_destino();
-    if(es_usuario_final($destino))
-    {
-        $tipo_destino = 3;
-		$operadora = leer_operadora($destino);
-    }
-	else
-	{
-	    if(!usuario_habilitado($destino))
-    	{
-        	respuesta_json("-4", "el destino=$destino no esta hablitado");
-    	}
-		$tipo_destino = leer_usuario_tipo($destino);
-	    if($tipo_destino == 1)
-    	{
-        	respuesta_json("-4", "el id=$destino es del tipo=$tipo_destino y no puede recibir transferencias");
-    	}
-	}
-
-	//destino cuenta
-	if($tipo_destino == 3) //si es usuario final
-	{
-        $query = "UPDATE usuarios_cuentas SET saldo=saldo-$monto, ganancia=ganancia+$comision WHERE id=$cuenta";
-        $result=pg_query($query);
-        if(!$result)
-        {
-            respuesta_json("-3", "Error en el SQL $query");
-        }
-
-        respuesta_json("0", "La transferencia de la cuenta $cuenta a la cuenta $destino_cuenta de la operadora $operadora por $monto con $comision de comision fue exitosa");
-	}
-	else
-	{
-	    $nro_cuentas = usuarios_cuentas_cantidad($destino);
-    	if($nro_cuentas == 0)
-    	{
-        	respuesta_json("-1", "el destino=$destino aun no tiene cuentas");
-    	}
-    	else if($nro_cuentas == 1)
-    	{
-        	$result = do_select("SELECT id FROM usuarios_cuentas WHERE usuario=$destino", "destino=$destino no existe en usuarios_cuenta", false);
-        	$row=pg_fetch_row($result);
-        	$destino_cuenta = $row[0];
-			pg_free_result($result);
-    	}
-    	else
-    	{
-        	if(!isset($_REQUEST['destino_cuenta']))
-        	{
-            	respuesta_json("-4", "debe especificar el numero de cuenta de destino");
-        	}
-        	$destino_cuenta = trim($_REQUEST['destino_cuenta']);
-        	if(!($destino_cuenta>0))
-        	{
-            	respuesta_json("-1", "Cuenta de destino invalida");
-        	}
-    	}
-
-    	if(!cuenta_habilitada($destino_cuenta))
-    	{
-        	respuesta_json("-4", "la cuenta destino=$destino_cuenta no esta hablitada");
-    	}
-
-		if($id == $destino)
-			$comision = 0; //Transferencia entre cuentas del mismo usuario
-
-		//acreditacion usuario local (distribuidor o revendedor)
-	    $query = "UPDATE usuarios_cuentas SET saldo=saldo+($monto-$comision) WHERE id=$destino_cuenta";
-    	$result=pg_query($query);
-    	if(!$result)
-    	{
-        	respuesta_json("-3", "Error en el SQL $query");
-    	}
-	    $query = "UPDATE usuarios_cuentas SET saldo=saldo-$monto, ganancia=ganancia+$comision WHERE id=$cuenta";
-    	$result=pg_query($query);
-	    if(!$result)
-    	{
-        	respuesta_json("-3", "Error en el SQL $query");
-    	}
-
-		respuesta_json("0", "La transferencia de la cuenta $cuenta a la cuenta $destino_cuenta por $monto con $comision de comision fue exitosa");
-	}
 }
 
 function crear_usuario_login()
@@ -654,6 +695,7 @@ function usuarios_cuentas_cantidad($id)
 	return $cantidad;	
 }
 
+//validadores
 function verificar_id()
 {
     if(!isset($_REQUEST['id']))
@@ -806,7 +848,8 @@ function verificar_monto()
     {
         respuesta_json("-1", "monto $monto invalido");
     }
-	return $monto;
+	
+    return $monto;
 }
 
 function auth_login()
@@ -897,6 +940,7 @@ function respuesta_json($err, $texto)
 	echo json_encode(array('respuesta' => $err, 'resultado' => $texto, 'llave' => SID));
 	exit;
 }
+
 function do_select($query, $texto, $with_result)
 {
     $result=pg_query($query);
@@ -916,4 +960,5 @@ function do_select($query, $texto, $with_result)
 	
 	return $result;
 }
+
 ?>
