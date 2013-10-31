@@ -28,7 +28,8 @@ class user extends CI_Controller {
 		
 		$username = "&username=".$this->input->post('username');
 		$password = "&password=".$this->input->post('password');
-		$url = $url .$username.$password;
+		$senderapp = "web";
+		$url = $url .$username.$password.$senderapp;
 		$response = $this->fn_curl($url);
 		
 		if($response['respuesta']<="-1")
@@ -272,9 +273,9 @@ class user extends CI_Controller {
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_COOKIEJAR,"cookie.txt"); // sesión
-		curl_setopt($ch, CURLOPT_COOKIEFILE,"cookie.txt"); // sesión
-		curl_setopt($ch, CURLOPT_COOKIESESSION, "cookie.txt"); // sesión
+		curl_setopt($ch, CURLOPT_COOKIEJAR,"cookie.txt"); // sesiï¿½n
+		curl_setopt($ch, CURLOPT_COOKIEFILE,"cookie.txt"); // sesiï¿½n
+		curl_setopt($ch, CURLOPT_COOKIESESSION, "cookie.txt"); // sesiï¿½n
 		$response = curl_exec($ch);
 		$response = json_decode($response,true);
 		curl_close($ch);
